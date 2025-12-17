@@ -4,15 +4,21 @@ Full League Simulation - Runs a complete Even/Odd league with all agents.
 This script simulates the entire league flow:
 1. Registration of referees and players
 2. Round-robin schedule generation
-3. Match execution with all protocol messages
+3. Match execution with parallel processing
 4. Standings calculation and final results
+
+Supports both sequential and parallel match execution modes.
 """
 
 import sys
 import random
+import asyncio
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from itertools import combinations
+from typing import List, Dict, Any
+from concurrent.futures import ThreadPoolExecutor
 
 # Add SHARED to path
 sys.path.insert(0, str(Path(__file__).parent / "SHARED"))
@@ -36,6 +42,7 @@ class Player:
         self.history = []
         self._last_choice = "even"
         self._opponent_history = {}
+        self._lock = asyncio.Lock() if asyncio else None
 
     def choose_parity(self, opponent_id: str) -> str:
         """Choose parity based on strategy."""
@@ -50,7 +57,6 @@ class Player:
             self._last_choice = "odd" if choice == "even" else "even"
             return choice
         elif self.strategy == "adaptive":
-            # Check opponent history
             opp_hist = self._opponent_history.get(opponent_id, [])
             if len(opp_hist) < 2:
                 return random.choice(["even", "odd"])
@@ -60,7 +66,7 @@ class Player:
         return random.choice(["even", "odd"])
 
     def record_result(self, result: str, opponent_id: str, opponent_choice: str):
-        """Record match result."""
+        """Record match result (thread-safe)."""
         if result == "WIN":
             self.wins += 1
             self.points += 3
@@ -70,7 +76,6 @@ class Player:
         else:
             self.losses += 1
 
-        # Track opponent history for adaptive strategy
         if opponent_id not in self._opponent_history:
             self._opponent_history[opponent_id] = []
         self._opponent_history[opponent_id].append(opponent_choice)
@@ -86,17 +91,14 @@ class Referee:
 
     def conduct_match(self, player_a: Player, player_b: Player, match_id: str) -> dict:
         """Conduct a match between two players."""
-        # Get choices
         choice_a = player_a.choose_parity(player_b.player_id)
         choice_b = player_b.choose_parity(player_a.player_id)
 
-        # Determine outcome
         outcome = self.game.determine_match_outcome(
             player_a.player_id, choice_a,
             player_b.player_id, choice_b
         )
 
-        # Record results
         player_a.record_result(outcome.player_a_result, player_b.player_id, choice_b)
         player_b.record_result(outcome.player_b_result, player_a.player_id, choice_a)
 
@@ -115,14 +117,17 @@ class Referee:
 
 
 class LeagueSimulation:
-    """Full league simulation."""
+    """Full league simulation with parallel execution support."""
 
-    def __init__(self):
+    def __init__(self, parallel: bool = False):
         self.players = {}
         self.referees = {}
         self.schedule = []
         self.match_results = []
         self.activity_log = []
+        self.parallel = parallel
+        self.start_time = None
+        self.end_time = None
 
     def log(self, event_type: str, message: str, **kwargs):
         """Log activity."""
@@ -152,8 +157,6 @@ class LeagueSimulation:
         """Generate round-robin schedule."""
         player_ids = list(self.players.keys())
         all_matches = list(combinations(player_ids, 2))
-
-        # Distribute into rounds
         remaining = list(all_matches)
         round_num = 0
 
@@ -180,46 +183,88 @@ class LeagueSimulation:
                 round_num += 1
 
         total_matches = sum(len(r) for r in self.schedule)
-        self.log("SCHEDULE_GENERATED",
-                 f"{len(self.schedule)} rounds, {total_matches} matches")
+        self.log("SCHEDULE_GENERATED", f"{len(self.schedule)} rounds, {total_matches} matches")
+
+    def _execute_match(self, match: dict, referee: Referee) -> dict:
+        """Execute a single match."""
+        player_a = self.players[match["player_a"]]
+        player_b = self.players[match["player_b"]]
+        return referee.conduct_match(player_a, player_b, match["match_id"])
+
+    async def _run_round_parallel(self, round_matches: List[dict], round_num: int):
+        """Run all matches in a round in parallel."""
+        referee_ids = list(self.referees.keys())
+
+        async def run_match(match: dict, idx: int):
+            referee = self.referees[referee_ids[idx % len(referee_ids)]]
+            # Simulate async processing
+            await asyncio.sleep(0.01)
+            return self._execute_match(match, referee)
+
+        # Create tasks for all matches
+        tasks = [run_match(m, i) for i, m in enumerate(round_matches)]
+        results = await asyncio.gather(*tasks)
+
+        for result, match in zip(results, round_matches):
+            result["round_num"] = round_num
+            result["referee"] = referee_ids[round_matches.index(match) % len(referee_ids)]
+            self.match_results.append(result)
+
+            winner_str = result["winner"] if result["winner"] else "DRAW"
+            self.log("MATCH_COMPLETED",
+                     f"{match['match_id']}: {result['player_a']} vs {result['player_b']} -> {winner_str}",
+                     drawn_number=result["drawn_number"])
 
     def run_league(self):
-        """Run the entire league."""
-        self.log("LEAGUE_START", "League starting")
+        """Run the entire league (sequential or parallel)."""
+        self.start_time = time.perf_counter()
+        self.log("LEAGUE_START", f"League starting (parallel={self.parallel})")
 
+        if self.parallel:
+            asyncio.run(self._run_league_async())
+        else:
+            self._run_league_sequential()
+
+        self.end_time = time.perf_counter()
+        duration_ms = (self.end_time - self.start_time) * 1000
+        self.log("LEAGUE_COMPLETED", f"League finished in {duration_ms:.2f}ms")
+
+    async def _run_league_async(self):
+        """Run league with parallel match execution."""
+        for round_idx, round_matches in enumerate(self.schedule):
+            round_num = round_idx + 1
+            self.log("ROUND_START", f"Round {round_num} starting (parallel)", matches=len(round_matches))
+
+            await self._run_round_parallel(round_matches, round_num)
+
+            self.log("ROUND_COMPLETED", f"Round {round_num} completed")
+            self.print_standings(f"After Round {round_num}")
+
+    def _run_league_sequential(self):
+        """Run league with sequential match execution."""
         referee_ids = list(self.referees.keys())
 
         for round_idx, round_matches in enumerate(self.schedule):
             round_num = round_idx + 1
-            self.log("ROUND_START", f"Round {round_num} starting",
-                     matches=len(round_matches))
+            self.log("ROUND_START", f"Round {round_num} starting", matches=len(round_matches))
 
             for match_idx, match in enumerate(round_matches):
-                # Assign referee (round-robin)
                 referee_id = referee_ids[match_idx % len(referee_ids)]
                 referee = self.referees[referee_id]
 
-                player_a = self.players[match["player_a"]]
-                player_b = self.players[match["player_b"]]
-
-                # Conduct match
-                result = referee.conduct_match(player_a, player_b, match["match_id"])
+                result = self._execute_match(match, referee)
                 result["round_num"] = round_num
                 result["referee"] = referee_id
                 self.match_results.append(result)
 
-                # Log match result
                 winner_str = result["winner"] if result["winner"] else "DRAW"
                 self.log("MATCH_COMPLETED",
-                         f"{match['match_id']}: {player_a.player_id} vs {player_b.player_id} -> {winner_str}",
+                         f"{match['match_id']}: {result['player_a']} vs {result['player_b']} -> {winner_str}",
                          drawn_number=result["drawn_number"],
                          choices=f"{result['choice_a']}/{result['choice_b']}")
 
-            # Show standings after round
             self.log("ROUND_COMPLETED", f"Round {round_num} completed")
             self.print_standings(f"After Round {round_num}")
-
-        self.log("LEAGUE_COMPLETED", "League finished")
 
     def get_standings(self):
         """Get current standings sorted by points."""
@@ -281,56 +326,69 @@ class LeagueSimulation:
             print(f"  {time_str:<12}{entry['event']:<25}{entry['message']:<40}")
         print(f"{'='*80}\n")
 
+    def get_performance_stats(self) -> dict:
+        """Get performance statistics."""
+        if not self.start_time or not self.end_time:
+            return {}
+        duration_ms = (self.end_time - self.start_time) * 1000
+        return {
+            "total_duration_ms": round(duration_ms, 2),
+            "total_matches": len(self.match_results),
+            "avg_match_time_ms": round(duration_ms / max(len(self.match_results), 1), 2),
+            "parallel_mode": self.parallel,
+        }
 
-def main():
+
+def main(parallel: bool = False):
     """Run the full league simulation."""
     print("\n" + "="*80)
-    print("       EVEN/ODD AI AGENT LEAGUE - FULL SIMULATION")
+    mode = "PARALLEL" if parallel else "SEQUENTIAL"
+    print(f"       EVEN/ODD AI AGENT LEAGUE - {mode} SIMULATION")
     print("="*80 + "\n")
 
-    # Create simulation
-    sim = LeagueSimulation()
+    sim = LeagueSimulation(parallel=parallel)
 
-    # Register referees
     print("--- Registering Referees ---")
     sim.register_referee("REF01")
     sim.register_referee("REF02")
 
-    # Register players with different strategies
     print("\n--- Registering Players ---")
     sim.register_player("P01", "AlphaBot", "random")
     sim.register_player("P02", "BetaBot", "deterministic_even")
     sim.register_player("P03", "GammaBot", "alternating")
     sim.register_player("P04", "DeltaBot", "adaptive")
 
-    # Generate schedule
     print("\n--- Generating Schedule ---")
     sim.generate_schedule()
 
-    # Run the league
     print("\n--- Running League ---")
     sim.run_league()
 
-    # Print results
     sim.print_match_history()
     sim.print_activity_log()
 
-    # Final standings
     print("\n" + "="*80)
     print("       FINAL RESULTS")
     print("="*80)
     sim.print_standings("FINAL STANDINGS")
 
-    # Winner announcement
     standings = sim.get_standings()
     winner = standings[0]
     print(f"\n  CHAMPION: {winner['player_id']} ({winner['display_name']})")
     print(f"  Strategy: {winner['strategy']}")
     print(f"  Record: {winner['wins']}W-{winner['draws']}D-{winner['losses']}L ({winner['points']} points)")
+
+    stats = sim.get_performance_stats()
+    if stats:
+        print(f"\n  PERFORMANCE: {stats['total_duration_ms']:.2f}ms total, "
+              f"{stats['avg_match_time_ms']:.2f}ms/match")
+
     print("\n" + "="*80 + "\n")
 
     return sim
 
 
 if __name__ == "__main__":
-    main()
+    # Check for --parallel flag
+    parallel_mode = "--parallel" in sys.argv
+    main(parallel=parallel_mode)

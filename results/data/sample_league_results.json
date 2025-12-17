@@ -1,0 +1,116 @@
+{
+  "league_id": "LEAGUE_2025_001",
+  "timestamp": "2025-01-15T11:04:29Z",
+  "standings": [
+    {
+      "rank": 1,
+      "player_id": "P04",
+      "display_name": "DeltaBot",
+      "strategy": "adaptive",
+      "wins": 1,
+      "draws": 2,
+      "losses": 0,
+      "points": 5
+    },
+    {
+      "rank": 2,
+      "player_id": "P02",
+      "display_name": "BetaBot",
+      "strategy": "deterministic_even",
+      "wins": 0,
+      "draws": 3,
+      "losses": 0,
+      "points": 3
+    },
+    {
+      "rank": 3,
+      "player_id": "P03",
+      "display_name": "GammaBot",
+      "strategy": "alternating",
+      "wins": 0,
+      "draws": 3,
+      "losses": 0,
+      "points": 3
+    },
+    {
+      "rank": 4,
+      "player_id": "P01",
+      "display_name": "AlphaBot",
+      "strategy": "random",
+      "wins": 0,
+      "draws": 2,
+      "losses": 1,
+      "points": 2
+    }
+  ],
+  "matches": [
+    {
+      "match_id": "R1M1",
+      "round_num": 1,
+      "player_a": "P01",
+      "player_b": "P02",
+      "choice_a": "even",
+      "choice_b": "even",
+      "drawn_number": 5,
+      "winner": null
+    },
+    {
+      "match_id": "R1M2",
+      "round_num": 1,
+      "player_a": "P03",
+      "player_b": "P04",
+      "choice_a": "even",
+      "choice_b": "even",
+      "drawn_number": 6,
+      "winner": null
+    },
+    {
+      "match_id": "R2M1",
+      "round_num": 2,
+      "player_a": "P01",
+      "player_b": "P03",
+      "choice_a": "odd",
+      "choice_b": "odd",
+      "drawn_number": 10,
+      "winner": null
+    },
+    {
+      "match_id": "R2M2",
+      "round_num": 2,
+      "player_a": "P02",
+      "player_b": "P04",
+      "choice_a": "even",
+      "choice_b": "even",
+      "drawn_number": 1,
+      "winner": null
+    },
+    {
+      "match_id": "R3M1",
+      "round_num": 3,
+      "player_a": "P01",
+      "player_b": "P04",
+      "choice_a": "even",
+      "choice_b": "odd",
+      "drawn_number": 1,
+      "winner": "P04"
+    },
+    {
+      "match_id": "R3M2",
+      "round_num": 3,
+      "player_a": "P02",
+      "player_b": "P03",
+      "choice_a": "even",
+      "choice_b": "even",
+      "drawn_number": 8,
+      "winner": null
+    }
+  ],
+  "statistics": {
+    "total_matches": 6,
+    "total_rounds": 3,
+    "draws": 5,
+    "decisive_matches": 1,
+    "avg_match_time_ms": 12,
+    "total_duration_ms": 150
+  }
+}

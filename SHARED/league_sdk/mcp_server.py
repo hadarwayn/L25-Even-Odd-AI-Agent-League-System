@@ -1,7 +1,8 @@
 """
 Base MCP server class for agents.
 
-Provides FastAPI-based MCP server foundation.
+Provides FastAPI-based MCP server foundation with authentication
+and rate limiting support.
 """
 
 from typing import Any, Callable, Optional
@@ -10,10 +11,16 @@ from fastapi.responses import JSONResponse
 
 from .helpers import utc_now, generate_uuid, validate_utc
 from .logger import JsonLogger
+from .auth import (
+    RateLimiter,
+    AuthTokenValidator,
+    requires_auth,
+    sanitize_metadata,
+)
 
 
 class MCPServer:
-    """Base MCP server for agents."""
+    """Base MCP server for agents with auth and rate limiting."""
 
     def __init__(
         self,
@@ -21,6 +28,8 @@ class MCPServer:
         agent_id: str,
         host: str = "127.0.0.1",
         port: int = 8000,
+        enable_rate_limiting: bool = True,
+        rate_limit: int = 100,
     ):
         """
         Initialize MCP server.
@@ -30,6 +39,8 @@ class MCPServer:
             agent_id: Agent identifier
             host: Server host
             port: Server port
+            enable_rate_limiting: Whether to enable rate limiting
+            rate_limit: Max requests per minute per sender
         """
         self.agent_type = agent_type
         self.agent_id = agent_id
@@ -40,6 +51,11 @@ class MCPServer:
         self.app = FastAPI(title=f"{agent_type.title()} {agent_id}")
         self.logger = JsonLogger(agent_type, agent_id)
         self._handlers: dict[str, Callable] = {}
+
+        # Security components
+        self._rate_limiter = RateLimiter(max_requests=rate_limit)
+        self._auth_validator = AuthTokenValidator()
+        self._enable_rate_limiting = enable_rate_limiting
 
         self._setup_routes()
 
@@ -55,7 +71,7 @@ class MCPServer:
             return {"status": "healthy", "agent": self.sender}
 
     async def _handle_request(self, request: Request) -> JSONResponse:
-        """Handle incoming MCP request."""
+        """Handle incoming MCP request with auth and rate limiting."""
         try:
             body = await request.json()
         except Exception:
@@ -68,18 +84,31 @@ class MCPServer:
         method = body.get("method")
         params = body.get("params", {})
         request_id = body.get("id")
+        sender = params.get("sender", "unknown")
+
+        # Rate limiting check
+        if self._enable_rate_limiting and not self._rate_limiter.is_allowed(sender):
+            self.logger.warning("RATE_LIMITED", f"Rate limit exceeded: {sender}")
+            return self._error_response(request_id, -32000, "Rate limit exceeded")
 
         # Validate envelope
         if not self._validate_envelope(params):
             return self._error_response(request_id, -32602, "Invalid envelope")
 
+        # Auth token validation for protected messages
+        if requires_auth(method):
+            auth_token = params.get("auth_token")
+            if not self._validate_auth_token(auth_token, params):
+                self.logger.warning("AUTH_FAILED", f"Invalid auth: {sender}")
+                return self._error_response(request_id, -32001, "Auth failed")
+
         # Log incoming message
-        self.logger.message_received(method, params.get("sender", "unknown"))
+        self.logger.message_received(method, sender)
 
         # Route to handler
         handler = self._handlers.get(method)
         if not handler:
-            return self._error_response(request_id, -32601, f"Method not found: {method}")
+            return self._error_response(request_id, -32601, f"Unknown: {method}")
 
         try:
             result = await handler(params)
@@ -102,6 +131,16 @@ class MCPServer:
         if not validate_utc(params.get("timestamp", "")):
             return False
         return True
+
+    def _validate_auth_token(self, token: Optional[str], params: dict) -> bool:
+        """Validate auth token for request."""
+        if not token:
+            return False
+        return self._auth_validator.validate_token(token)
+
+    def register_auth_token(self, agent_id: str, token: str) -> None:
+        """Register a valid auth token for an agent."""
+        self._auth_validator.register_token(agent_id, token)
 
     def _error_response(
         self,

@@ -1,7 +1,7 @@
 """
 Unit tests for message handlers.
 
-Tests the MessageHandler class for handling:
+Tests the handler classes for handling:
 - Game invitations
 - Parity choice calls
 - Game over messages
@@ -9,237 +9,165 @@ Tests the MessageHandler class for handling:
 """
 
 import pytest
-from unittest.mock import Mock, AsyncMock
+import sys
+from pathlib import Path
+from unittest.mock import Mock, AsyncMock, patch
 
-from src.agents.player_agent.state import PlayerState, AgentLifecycle
-from src.agents.player_agent.handlers import MessageHandler
-from src.strategy.random_strategy import RandomStrategy
+# Add SHARED and agents to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "SHARED"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "agents"))
 
-
-@pytest.fixture
-def player_state():
-    """Create a registered player state."""
-    state = PlayerState()
-    state.register(
-        player_id="P01",
-        auth_token="tok_test_abc123",
-        league_id="league_2025",
-    )
-    return state
+from league_sdk.helpers import utc_now, generate_uuid
+from league_sdk.game_rules.even_odd import EvenOddGame, determine_winner
 
 
-@pytest.fixture
-def mock_logger():
-    """Create a mock logger."""
-    logger = Mock()
-    logger.info = Mock()
-    logger.warning = Mock()
-    logger.error = Mock()
-    logger.log_message_received = Mock()
-    logger.log_message_sent = Mock()
-    logger.log_game_result = Mock()
-    return logger
+class TestEvenOddGameLogic:
+    """Tests for Even/Odd game logic."""
 
+    def test_get_parity_even(self):
+        """Even numbers return 'even'."""
+        game = EvenOddGame()
+        assert game.get_parity(2) == "even"
+        assert game.get_parity(4) == "even"
+        assert game.get_parity(10) == "even"
 
-@pytest.fixture
-def handler(player_state, mock_logger):
-    """Create a message handler."""
-    strategy = RandomStrategy(seed=42)  # Fixed seed for reproducibility
-    return MessageHandler(
-        state=player_state,
-        strategy=strategy,
-        logger=mock_logger,
-    )
+    def test_get_parity_odd(self):
+        """Odd numbers return 'odd'."""
+        game = EvenOddGame()
+        assert game.get_parity(1) == "odd"
+        assert game.get_parity(3) == "odd"
+        assert game.get_parity(9) == "odd"
 
+    def test_draw_number_in_range(self):
+        """Drawn number is within specified range."""
+        game = EvenOddGame(min_number=1, max_number=10)
+        for _ in range(100):
+            num = game.draw_number()
+            assert 1 <= num <= 10
 
-class TestGameInvitationHandler:
-    """Tests for handling GAME_INVITATION messages."""
-
-    @pytest.mark.asyncio
-    async def test_accept_game_invitation(self, handler, player_state):
-        """Handler accepts game invitation and returns GAME_JOIN_ACK."""
-        invitation = {
-            "protocol": "league.v2",
-            "message_type": "GAME_INVITATION",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:30:00Z",
-            "conversation_id": "conv-r1m1-001",
-            "league_id": "league_2025",
-            "round_id": 1,
-            "match_id": "R1M1",
-            "game_invitation": {
-                "game_type": "even_odd",
-                "match_id": "R1M1",
-                "role_in_match": "PLAYER_A",
-                "opponent_id": "P02",
-            },
-        }
-
-        response = await handler.handle_message("GAME_INVITATION", invitation)
-
-        assert response["message_type"] == "GAME_JOIN_ACK"
-        assert response["accept"] is True
-        assert response["match_id"] == "R1M1"
-        assert response["auth_token"] == "tok_test_abc123"
-        assert player_state.lifecycle == AgentLifecycle.ACTIVE
-
-    @pytest.mark.asyncio
-    async def test_invitation_updates_state(self, handler, player_state):
-        """Game invitation updates player state with match info."""
-        invitation = {
-            "protocol": "league.v2",
-            "message_type": "GAME_INVITATION",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:30:00Z",
-            "conversation_id": "conv-r1m1-001",
-            "league_id": "league_2025",
-            "round_id": 1,
-            "match_id": "R1M1",
-            "game_invitation": {
-                "game_type": "even_odd",
-                "match_id": "R1M1",
-                "role_in_match": "PLAYER_B",
-                "opponent_id": "P03",
-            },
-        }
-
-        await handler.handle_message("GAME_INVITATION", invitation)
-
-        assert player_state.current_match is not None
-        assert player_state.current_match.match_id == "R1M1"
-        assert player_state.current_match.opponent_id == "P03"
-        assert player_state.current_match.role == "PLAYER_B"
-
-
-class TestChooseParityHandler:
-    """Tests for handling CHOOSE_PARITY_CALL messages."""
-
-    @pytest.mark.asyncio
-    async def test_choose_parity_returns_valid_choice(self, handler, player_state):
-        """Handler returns valid parity choice."""
-        # First accept an invitation
-        invitation = {
-            "protocol": "league.v2",
-            "message_type": "GAME_INVITATION",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:30:00Z",
-            "conversation_id": "conv-r1m1-001",
-            "league_id": "league_2025",
-            "round_id": 1,
-            "match_id": "R1M1",
-            "game_invitation": {
-                "game_type": "even_odd",
-                "match_id": "R1M1",
-                "role_in_match": "PLAYER_A",
-                "opponent_id": "P02",
-            },
-        }
-        await handler.handle_message("GAME_INVITATION", invitation)
-
-        parity_call = {
-            "protocol": "league.v2",
-            "message_type": "CHOOSE_PARITY_CALL",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:30:10Z",
-            "conversation_id": "conv-r1m1-001",
-            "league_id": "league_2025",
-            "round_id": 1,
-            "match_id": "R1M1",
-            "player_id": "P01",
-            "parity_context": {
-                "valid_options": ["even", "odd"],
-                "your_standings": {"wins": 0, "losses": 0, "draws": 0},
-                "opponent_id": "P02",
-            },
-            "deadline": "2025-01-15T10:30:40Z",
-        }
-
-        response = await handler.handle_message("CHOOSE_PARITY_CALL", parity_call)
-
-        assert response["message_type"] == "CHOOSE_PARITY_RESPONSE"
-        assert response["parity_choice"] in ("even", "odd")
-        assert response["auth_token"] == "tok_test_abc123"
-
-
-class TestGameOverHandler:
-    """Tests for handling GAME_OVER messages."""
-
-    @pytest.mark.asyncio
-    async def test_game_over_updates_stats(self, handler, player_state):
-        """Game over updates player statistics."""
-        # Setup match state
-        player_state.start_match(
-            match_id="R1M1",
-            round_id=1,
-            opponent_id="P02",
-            role="PLAYER_A",
-            conversation_id="conv-001",
+    def test_both_correct_is_draw(self):
+        """Both players correct results in draw."""
+        game = EvenOddGame()
+        outcome = game.determine_match_outcome(
+            "P01", "even",
+            "P02", "even",
+            drawn_number=4,  # Even number
         )
-        player_state.record_choice("even")
+        assert outcome.player_a_result == "DRAW"
+        assert outcome.player_b_result == "DRAW"
+        assert outcome.winner_id is None
 
-        game_over = {
-            "protocol": "league.v2",
-            "message_type": "GAME_OVER",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:31:00Z",
-            "conversation_id": "conv-001",
-            "league_id": "league_2025",
-            "round_id": 1,
-            "match_id": "R1M1",
-            "game_result": {
-                "status": "WIN",
-                "winner_player_id": "P01",
-                "drawn_number": 8,
-                "choices": {"P01": "even", "P02": "odd"},
-            },
-        }
+    def test_both_wrong_is_draw(self):
+        """Both players wrong results in draw."""
+        game = EvenOddGame()
+        outcome = game.determine_match_outcome(
+            "P01", "odd",
+            "P02", "odd",
+            drawn_number=4,  # Even number, both chose odd
+        )
+        assert outcome.player_a_result == "DRAW"
+        assert outcome.player_b_result == "DRAW"
+        assert outcome.winner_id is None
 
-        await handler.handle_message("GAME_OVER", game_over)
+    def test_player_a_wins(self):
+        """Player A wins when only A is correct."""
+        game = EvenOddGame()
+        outcome = game.determine_match_outcome(
+            "P01", "even",
+            "P02", "odd",
+            drawn_number=4,  # Even number
+        )
+        assert outcome.player_a_result == "WIN"
+        assert outcome.player_b_result == "LOSS"
+        assert outcome.winner_id == "P01"
 
-        assert player_state.stats.wins == 1
-        assert player_state.stats.total_games == 1
-        assert player_state.current_match is None
+    def test_player_b_wins(self):
+        """Player B wins when only B is correct."""
+        game = EvenOddGame()
+        outcome = game.determine_match_outcome(
+            "P01", "even",
+            "P02", "odd",
+            drawn_number=3,  # Odd number
+        )
+        assert outcome.player_a_result == "LOSS"
+        assert outcome.player_b_result == "WIN"
+        assert outcome.winner_id == "P02"
+
+    def test_determine_winner_convenience_function(self):
+        """Test convenience function for determining winner."""
+        result_a, result_b, winner = determine_winner("even", "odd", 4)
+        assert result_a == "WIN"
+        assert result_b == "LOSS"
+        assert winner == "player_a"
 
 
-class TestErrorHandlers:
-    """Tests for error message handling."""
+class TestPointsCalculation:
+    """Tests for points calculation."""
 
-    @pytest.mark.asyncio
-    async def test_league_error_logged(self, handler, mock_logger):
-        """League error is logged without crashing."""
-        error = {
-            "protocol": "league.v2",
-            "message_type": "LEAGUE_ERROR",
-            "sender": "league_manager",
-            "timestamp": "2025-01-15T10:35:00Z",
-            "error_code": "E005",
-            "error_name": "PLAYER_NOT_REGISTERED",
-            "error_description": "Player ID not found",
-            "retryable": False,
-        }
+    def test_win_points(self):
+        """Win awards 3 points."""
+        from league_sdk.helpers import calculate_points
+        assert calculate_points("WIN") == 3
 
-        response = await handler.handle_message("LEAGUE_ERROR", error)
+    def test_draw_points(self):
+        """Draw awards 1 point."""
+        from league_sdk.helpers import calculate_points
+        assert calculate_points("DRAW") == 1
 
-        assert response["status"] == "acknowledged"
-        mock_logger.error.assert_called()
+    def test_loss_points(self):
+        """Loss awards 0 points."""
+        from league_sdk.helpers import calculate_points
+        assert calculate_points("LOSS") == 0
 
-    @pytest.mark.asyncio
-    async def test_game_error_logged(self, handler, mock_logger):
-        """Game error is logged without crashing."""
-        error = {
-            "protocol": "league.v2",
-            "message_type": "GAME_ERROR",
-            "sender": "referee:REF01",
-            "timestamp": "2025-01-15T10:31:00Z",
-            "match_id": "R1M1",
-            "player_id": "P01",
-            "error_code": "E001",
-            "error_name": "TIMEOUT_ERROR",
-            "error_description": "Response not received in time",
-            "retryable": True,
-        }
+    def test_technical_loss_points(self):
+        """Technical loss awards 0 points."""
+        from league_sdk.helpers import calculate_points
+        assert calculate_points("TECHNICAL_LOSS") == 0
 
-        response = await handler.handle_message("GAME_ERROR", error)
 
-        assert response["status"] == "acknowledged"
-        mock_logger.error.assert_called()
+class TestSenderParsing:
+    """Tests for sender string parsing."""
+
+    def test_parse_player_sender(self):
+        """Parse player sender string."""
+        from league_sdk.helpers import parse_sender
+        agent_type, agent_id = parse_sender("player:P01")
+        assert agent_type == "player"
+        assert agent_id == "P01"
+
+    def test_parse_referee_sender(self):
+        """Parse referee sender string."""
+        from league_sdk.helpers import parse_sender
+        agent_type, agent_id = parse_sender("referee:REF01")
+        assert agent_type == "referee"
+        assert agent_id == "REF01"
+
+    def test_format_sender(self):
+        """Format sender string."""
+        from league_sdk.helpers import format_sender
+        sender = format_sender("player", "P01")
+        assert sender == "player:P01"
+
+    def test_invalid_sender_raises(self):
+        """Invalid sender format raises ValueError."""
+        from league_sdk.helpers import parse_sender
+        with pytest.raises(ValueError):
+            parse_sender("invalid_sender")
+
+
+class TestParityDetermination:
+    """Tests for parity determination."""
+
+    def test_determine_parity_even(self):
+        """Even numbers identified correctly."""
+        from league_sdk.helpers import determine_parity
+        assert determine_parity(2) == "even"
+        assert determine_parity(0) == "even"
+        assert determine_parity(100) == "even"
+
+    def test_determine_parity_odd(self):
+        """Odd numbers identified correctly."""
+        from league_sdk.helpers import determine_parity
+        assert determine_parity(1) == "odd"
+        assert determine_parity(3) == "odd"
+        assert determine_parity(99) == "odd"

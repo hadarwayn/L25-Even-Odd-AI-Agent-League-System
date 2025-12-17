@@ -11,7 +11,10 @@
       "Bash(curl:*)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Even/Odd AI Agent League System\n\nComplete multi-agent system implementing a competitive Even/Odd game league with:\n\n- League Manager (port 8000): Registration, scheduling, standings\n- Referee agents (ports 8001-8002): Match orchestration\n- Player agents (ports 8101-8104): Game participation with strategies\n- Shared SDK (league_sdk): Common components for all agents\n- Full league.v2 protocol with 18 message types\n- Player strategies: Random, Deterministic, Alternating, Adaptive\n- JSONL structured logging\n- Visualization module for results\n- Complete documentation (PRD, tasks.json, README)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ]
   }
 }

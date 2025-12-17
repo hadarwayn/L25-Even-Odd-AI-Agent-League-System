@@ -1,0 +1,30 @@
+{
+  "ring_buffer": {
+    "max_lines_per_file": 1000,
+    "max_log_files": 5,
+    "log_directory": "SHARED/logs",
+    "log_level": "INFO"
+  },
+  "formatters": {
+    "default": {
+      "format": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+    },
+    "jsonl": {
+      "format": "json_lines"
+    }
+  },
+  "agent_logging": {
+    "league_manager": {
+      "level": "INFO",
+      "directory": "SHARED/logs/league_manager"
+    },
+    "referee": {
+      "level": "INFO",
+      "directory": "SHARED/logs/referees"
+    },
+    "player": {
+      "level": "INFO",
+      "directory": "SHARED/logs/players"
+    }
+  }
+}
