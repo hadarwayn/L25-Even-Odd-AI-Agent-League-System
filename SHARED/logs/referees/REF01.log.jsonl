@@ -1,0 +1,2 @@
+{"timestamp": "2025-12-17T10:56:13.242153+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF01", "event_type": "STARTUP", "message": "Referee REF01 starting"}
+{"timestamp": "2025-12-17T10:56:13.375839+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF01", "event_type": "REGISTERED", "message": "Registered as REF01"}

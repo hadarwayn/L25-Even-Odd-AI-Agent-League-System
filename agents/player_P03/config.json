@@ -1,0 +1,7 @@
+{
+    "player_id": "P03",
+    "display_name": "GammaBot",
+    "host": "127.0.0.1",
+    "port": 8103,
+    "strategy": "alternating"
+}

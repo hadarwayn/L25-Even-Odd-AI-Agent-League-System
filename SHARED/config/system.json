@@ -1,0 +1,29 @@
+{
+    "protocol": {
+        "version": "league.v2",
+        "transport": "JSON-RPC 2.0",
+        "endpoint": "/mcp"
+    },
+    "timeouts": {
+        "registration": 10,
+        "game_join_ack": 5,
+        "parity_choice": 30,
+        "match_result_report": 10,
+        "league_query": 10
+    },
+    "retry": {
+        "max_retries": 3,
+        "backoff_seconds": 2,
+        "retryable_errors": ["E001", "E009"]
+    },
+    "scoring": {
+        "win": 3,
+        "draw": 1,
+        "loss": 0
+    },
+    "game": {
+        "type": "even_odd",
+        "number_range": [1, 10],
+        "valid_choices": ["even", "odd"]
+    }
+}

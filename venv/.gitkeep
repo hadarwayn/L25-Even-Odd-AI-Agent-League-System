@@ -1,0 +1,5 @@
+# This folder indicates a virtual environment should be created here
+# Run: uv venv
+# Then activate:
+# WSL/Linux/Mac: source .venv/bin/activate
+# Windows: .venv\Scripts\activate

@@ -1,0 +1,7 @@
+{
+    "player_id": "P01",
+    "display_name": "AlphaBot",
+    "host": "127.0.0.1",
+    "port": 8101,
+    "strategy": "random"
+}

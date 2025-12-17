@@ -1,0 +1,20 @@
+# Core dependencies
+fastapi==0.109.0
+uvicorn==0.27.0
+httpx==0.26.0
+pydantic==2.5.3
+
+# Configuration
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+
+# Development
+black==23.12.1

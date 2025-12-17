@@ -1,0 +1,515 @@
+{
+    "project_name": "Even/Odd AI Agent League System",
+    "description": "Distributed multi-agent system with League Manager, Referees, and Players",
+    "phases": [
+        {
+            "phase": "1_planning_and_environment",
+            "tasks": [
+                {
+                    "id": "1.1",
+                    "name": "Review Requirements",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": [],
+                    "description": "Read homework-part-*.md files and PROJECT_GUIDELINES.md. Extract protocol, timeout, logging requirements."
+                },
+                {
+                    "id": "1.2",
+                    "name": "Environment Setup",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": ["1.1"],
+                    "description": "Create UV virtual environment, directory structure, requirements.txt, .gitignore, .env.example."
+                },
+                {
+                    "id": "1.3",
+                    "name": "Create SHARED Directory Structure",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["1.2"],
+                    "description": "Create SHARED/ with config/, data/, logs/, and league_sdk/ subdirectories.",
+                    "files_to_create": [
+                        "SHARED/config/system.json",
+                        "SHARED/config/agents.json",
+                        "SHARED/config/league.json",
+                        "SHARED/data/standings/.gitkeep",
+                        "SHARED/data/matches/.gitkeep",
+                        "SHARED/data/state/.gitkeep",
+                        "SHARED/logs/league_manager/.gitkeep",
+                        "SHARED/logs/referees/.gitkeep",
+                        "SHARED/logs/players/.gitkeep"
+                    ]
+                }
+            ]
+        },
+        {
+            "phase": "2_shared_sdk",
+            "tasks": [
+                {
+                    "id": "2.1",
+                    "name": "Config Loader & Models",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["1.3"],
+                    "description": "Implement lazy-load JSON configuration with caching and type-safe dataclass models.",
+                    "files_to_create": [
+                        "SHARED/league_sdk/__init__.py",
+                        "SHARED/league_sdk/config_loader.py",
+                        "SHARED/league_sdk/config_models.py"
+                    ]
+                },
+                {
+                    "id": "2.2",
+                    "name": "Protocol Schemas",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["2.1"],
+                    "description": "Complete Pydantic models for all 18 message types with UTC validation.",
+                    "files_to_create": [
+                        "SHARED/league_sdk/schemas.py"
+                    ]
+                },
+                {
+                    "id": "2.3",
+                    "name": "MCP Client & Server Base",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["2.2"],
+                    "description": "HTTP client with retry logic and base MCP server class for agents.",
+                    "files_to_create": [
+                        "SHARED/league_sdk/mcp_client.py",
+                        "SHARED/league_sdk/mcp_server.py"
+                    ]
+                },
+                {
+                    "id": "2.4",
+                    "name": "Data Repositories",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["2.1"],
+                    "description": "Repository pattern for standings, matches, state, and player data access.",
+                    "files_to_create": [
+                        "SHARED/league_sdk/repositories.py"
+                    ]
+                },
+                {
+                    "id": "2.5",
+                    "name": "Logger & Helpers",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["2.1"],
+                    "description": "JSONL structured logging and helper utilities (UTC timestamps, ID generation).",
+                    "files_to_create": [
+                        "SHARED/league_sdk/logger.py",
+                        "SHARED/league_sdk/helpers.py"
+                    ]
+                },
+                {
+                    "id": "2.6",
+                    "name": "Game Rules Engine",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["2.1"],
+                    "description": "Even/Odd game logic for winner determination.",
+                    "files_to_create": [
+                        "SHARED/league_sdk/game_rules/__init__.py",
+                        "SHARED/league_sdk/game_rules/even_odd.py"
+                    ]
+                }
+            ]
+        },
+        {
+            "phase": "3_league_manager",
+            "tasks": [
+                {
+                    "id": "3.1",
+                    "name": "League Manager Main",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["2.3"],
+                    "description": "Entry point for League Manager on port 8000.",
+                    "files_to_create": [
+                        "agents/league_manager/main.py"
+                    ]
+                },
+                {
+                    "id": "3.2",
+                    "name": "Registration Handlers",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["3.1"],
+                    "description": "Handle LEAGUE_REGISTER_REQUEST and REFEREE_REGISTER_REQUEST, assign IDs and tokens.",
+                    "files_to_create": [
+                        "agents/league_manager/handlers.py"
+                    ]
+                },
+                {
+                    "id": "3.3",
+                    "name": "Round-Robin Scheduler",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["3.2"],
+                    "description": "Generate round-robin schedule, assign referees, broadcast ROUND_ANNOUNCEMENT.",
+                    "files_to_create": [
+                        "agents/league_manager/scheduler.py"
+                    ]
+                },
+                {
+                    "id": "3.4",
+                    "name": "Standings Calculator",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["3.2"],
+                    "description": "Calculate standings (Win=3, Draw=1, Loss=0), broadcast LEAGUE_STANDINGS_UPDATE.",
+                    "files_to_create": [
+                        "agents/league_manager/standings.py"
+                    ]
+                },
+                {
+                    "id": "3.5",
+                    "name": "Query Handler",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["3.4"],
+                    "description": "Handle LEAGUE_QUERY requests (standings, schedule, stats, next_match)."
+                }
+            ]
+        },
+        {
+            "phase": "4_referee_agent",
+            "tasks": [
+                {
+                    "id": "4.1",
+                    "name": "Referee Template Main",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["2.3"],
+                    "description": "Entry point for Referee agent with configurable port.",
+                    "files_to_create": [
+                        "agents/referee_template/main.py"
+                    ]
+                },
+                {
+                    "id": "4.2",
+                    "name": "Referee Registration",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["4.1"],
+                    "description": "Register with League Manager, receive referee_id and auth_token.",
+                    "files_to_create": [
+                        "agents/referee_template/handlers.py"
+                    ]
+                },
+                {
+                    "id": "4.3",
+                    "name": "Match Orchestration",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["4.2"],
+                    "description": "Send GAME_INVITATION, collect GAME_JOIN_ACK (5s), CHOOSE_PARITY (30s).",
+                    "files_to_create": [
+                        "agents/referee_template/game_logic.py"
+                    ]
+                },
+                {
+                    "id": "4.4",
+                    "name": "Winner Determination",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["4.3", "2.6"],
+                    "description": "Draw random number, determine winner, send GAME_OVER, report to Manager."
+                },
+                {
+                    "id": "4.5",
+                    "name": "Create Referee Instances",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["4.4"],
+                    "description": "Create referee_REF01 (port 8001) and referee_REF02 (port 8002) from template.",
+                    "files_to_create": [
+                        "agents/referee_REF01/main.py",
+                        "agents/referee_REF01/config.json",
+                        "agents/referee_REF02/main.py",
+                        "agents/referee_REF02/config.json"
+                    ]
+                }
+            ]
+        },
+        {
+            "phase": "5_player_agent",
+            "tasks": [
+                {
+                    "id": "5.1",
+                    "name": "Player Template Main",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": ["2.3"],
+                    "description": "Entry point for Player agent with configurable port.",
+                    "files_to_create": [
+                        "agents/player_template/main.py"
+                    ]
+                },
+                {
+                    "id": "5.2",
+                    "name": "Player Registration & State",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": ["5.1"],
+                    "description": "Register with Manager, manage state (INIT, REGISTERED, ACTIVE, SUSPENDED, SHUTDOWN).",
+                    "files_to_create": [
+                        "agents/player_template/handlers.py",
+                        "agents/player_template/state.py"
+                    ]
+                },
+                {
+                    "id": "5.3",
+                    "name": "Game Participation Handlers",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": ["5.2"],
+                    "description": "Handle GAME_INVITATION (5s), CHOOSE_PARITY_CALL (30s), GAME_OVER."
+                },
+                {
+                    "id": "5.4",
+                    "name": "Strategy Engine",
+                    "priority": "high",
+                    "status": "in_progress",
+                    "dependencies": ["5.3"],
+                    "description": "Implement pluggable strategies: Random, Deterministic, Alternating, Adaptive, LLM-Based.",
+                    "files_to_create": [
+                        "agents/player_template/strategies/base.py",
+                        "agents/player_template/strategies/random_strategy.py",
+                        "agents/player_template/strategies/deterministic.py",
+                        "agents/player_template/strategies/alternating.py",
+                        "agents/player_template/strategies/adaptive.py",
+                        "agents/player_template/strategies/llm_strategy.py"
+                    ]
+                },
+                {
+                    "id": "5.5",
+                    "name": "Create Player Instances",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["5.4"],
+                    "description": "Create player_P01-P04 instances with different strategies on ports 8101-8104.",
+                    "files_to_create": [
+                        "agents/player_P01/main.py",
+                        "agents/player_P01/config.json",
+                        "agents/player_P02/main.py",
+                        "agents/player_P02/config.json",
+                        "agents/player_P03/main.py",
+                        "agents/player_P03/config.json",
+                        "agents/player_P04/main.py",
+                        "agents/player_P04/config.json"
+                    ]
+                }
+            ]
+        },
+        {
+            "phase": "6_visualization_and_testing",
+            "tasks": [
+                {
+                    "id": "6.1",
+                    "name": "Visualizer Module",
+                    "priority": "high",
+                    "status": "completed",
+                    "dependencies": ["5.3"],
+                    "description": "Generate standings progression, win distribution, strategy comparison charts.",
+                    "files_to_create": [
+                        "src/visualizer.py"
+                    ]
+                },
+                {
+                    "id": "6.2",
+                    "name": "Unit Tests for SDK",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["2.6"],
+                    "description": "Test schemas, config loader, helpers, game rules.",
+                    "files_to_create": [
+                        "tests/test_sdk.py"
+                    ]
+                },
+                {
+                    "id": "6.3",
+                    "name": "Unit Tests for League Manager",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["3.5"],
+                    "description": "Test registration, scheduling, standings calculation.",
+                    "files_to_create": [
+                        "tests/test_league_manager.py"
+                    ]
+                },
+                {
+                    "id": "6.4",
+                    "name": "Unit Tests for Referee",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["4.4"],
+                    "description": "Test match orchestration, timeout handling, winner determination.",
+                    "files_to_create": [
+                        "tests/test_referee.py"
+                    ]
+                },
+                {
+                    "id": "6.5",
+                    "name": "Unit Tests for Player",
+                    "priority": "high",
+                    "status": "completed",
+                    "dependencies": ["5.3"],
+                    "description": "Test handlers, strategies, state management.",
+                    "files_to_create": [
+                        "tests/test_player.py"
+                    ]
+                },
+                {
+                    "id": "6.6",
+                    "name": "Integration Test: Full League",
+                    "priority": "critical",
+                    "status": "pending",
+                    "dependencies": ["6.2", "6.3", "6.4", "6.5"],
+                    "description": "Run full league with all agents, verify completion without errors."
+                }
+            ]
+        },
+        {
+            "phase": "7_documentation",
+            "tasks": [
+                {
+                    "id": "7.1",
+                    "name": "Update PRD.md",
+                    "priority": "critical",
+                    "status": "completed",
+                    "dependencies": ["1.1"],
+                    "description": "Complete PRD with multi-agent architecture, all 18 message types."
+                },
+                {
+                    "id": "7.2",
+                    "name": "Update tasks.json",
+                    "priority": "critical",
+                    "status": "in_progress",
+                    "dependencies": ["7.1"],
+                    "description": "Update tasks with full multi-agent implementation tasks."
+                },
+                {
+                    "id": "7.3",
+                    "name": "Update README.md",
+                    "priority": "high",
+                    "status": "pending",
+                    "dependencies": ["6.6"],
+                    "description": "Full system documentation with deployment instructions for all 7 agents."
+                }
+            ]
+        }
+    ],
+    "file_structure": {
+        "root": [
+            "README.md",
+            "main.py",
+            "requirements.txt",
+            ".gitignore",
+            ".env.example"
+        ],
+        "SHARED/config": [
+            "system.json",
+            "agents.json",
+            "league.json"
+        ],
+        "SHARED/data/standings": [".gitkeep"],
+        "SHARED/data/matches": [".gitkeep"],
+        "SHARED/data/state": [".gitkeep"],
+        "SHARED/logs/league_manager": [".gitkeep"],
+        "SHARED/logs/referees": [".gitkeep"],
+        "SHARED/logs/players": [".gitkeep"],
+        "SHARED/league_sdk": [
+            "__init__.py",
+            "config_loader.py",
+            "config_models.py",
+            "schemas.py",
+            "mcp_client.py",
+            "mcp_server.py",
+            "repositories.py",
+            "logger.py",
+            "helpers.py"
+        ],
+        "SHARED/league_sdk/game_rules": [
+            "__init__.py",
+            "even_odd.py"
+        ],
+        "agents/league_manager": [
+            "main.py",
+            "handlers.py",
+            "scheduler.py",
+            "standings.py"
+        ],
+        "agents/referee_template": [
+            "main.py",
+            "handlers.py",
+            "game_logic.py"
+        ],
+        "agents/referee_REF01": ["main.py", "config.json"],
+        "agents/referee_REF02": ["main.py", "config.json"],
+        "agents/player_template": [
+            "main.py",
+            "handlers.py",
+            "state.py"
+        ],
+        "agents/player_template/strategies": [
+            "__init__.py",
+            "base.py",
+            "random_strategy.py",
+            "deterministic.py",
+            "alternating.py",
+            "adaptive.py",
+            "llm_strategy.py"
+        ],
+        "agents/player_P01": ["main.py", "config.json"],
+        "agents/player_P02": ["main.py", "config.json"],
+        "agents/player_P03": ["main.py", "config.json"],
+        "agents/player_P04": ["main.py", "config.json"],
+        "results/graphs": [
+            "standings_progression.png",
+            "win_distribution.png",
+            "strategy_comparison.png"
+        ],
+        "tests": [
+            "__init__.py",
+            "test_sdk.py",
+            "test_league_manager.py",
+            "test_referee.py",
+            "test_player.py"
+        ],
+        "docs": [
+            "PRD.md",
+            "tasks.json"
+        ]
+    },
+    "success_criteria": {
+        "full_system_operation": [
+            "League Manager registers players and referees",
+            "Round-robin schedule generated correctly",
+            "Referees conduct matches in parallel",
+            "Players respond within timeouts",
+            "Standings calculated correctly",
+            "Full league runs to completion"
+        ],
+        "protocol_compliance": [
+            "All 18 message types implemented",
+            "UTC timestamps enforced",
+            "Auth tokens validated",
+            "Envelope fields complete"
+        ],
+        "code_quality": [
+            "All files under 150 lines",
+            "Type hints throughout",
+            "Comprehensive logging",
+            "Unit tests for core logic"
+        ],
+        "visual_results": [
+            "Performance graphs in results/graphs/",
+            "Match history visualization",
+            "Standings progression chart"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "player_id": "P02",
+    "display_name": "BetaBot",
+    "host": "127.0.0.1",
+    "port": 8102,
+    "strategy": "deterministic_even"
+}

@@ -1,0 +1,37 @@
+# Player Agent Configuration
+agent:
+  display_name: "AgentAlpha"
+  version: "1.0.0"
+  protocol_version: "2.1.0"
+  game_types:
+    - "even_odd"
+
+# Server settings
+server:
+  host: "127.0.0.1"
+  port: 8101
+
+# League Manager connection
+league_manager:
+  endpoint: "http://localhost:8000/mcp"
+
+# Timeouts (in seconds)
+timeouts:
+  registration: 10
+  game_join: 5
+  parity_choice: 30
+  default: 10
+
+# Retry policy
+retry:
+  max_retries: 3
+  backoff_seconds: 2
+
+# Logging
+logging:
+  level: "INFO"
+  directory: "logs/agents"
+
+# Data persistence
+data:
+  players_directory: "data/players"

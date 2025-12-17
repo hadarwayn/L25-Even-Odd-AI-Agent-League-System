@@ -1,0 +1,19 @@
+{
+    "league_id": "LEAGUE_2025",
+    "name": "Even/Odd Championship 2025",
+    "season": "1",
+    "min_players": 2,
+    "max_players": 8,
+    "min_referees": 1,
+    "rounds_per_matchup": 1,
+    "parallel_matches": true,
+    "auto_start": {
+        "enabled": true,
+        "min_players_to_start": 4,
+        "wait_after_min_players_seconds": 10
+    },
+    "standings_broadcast": {
+        "after_each_match": true,
+        "after_each_round": true
+    }
+}

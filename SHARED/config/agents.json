@@ -1,0 +1,56 @@
+{
+    "league_manager": {
+        "id": "MANAGER",
+        "host": "127.0.0.1",
+        "port": 8000,
+        "endpoint": "http://127.0.0.1:8000/mcp"
+    },
+    "referees": [
+        {
+            "id": "REF01",
+            "host": "127.0.0.1",
+            "port": 8001,
+            "endpoint": "http://127.0.0.1:8001/mcp"
+        },
+        {
+            "id": "REF02",
+            "host": "127.0.0.1",
+            "port": 8002,
+            "endpoint": "http://127.0.0.1:8002/mcp"
+        }
+    ],
+    "players": [
+        {
+            "id": "P01",
+            "display_name": "AlphaBot",
+            "host": "127.0.0.1",
+            "port": 8101,
+            "endpoint": "http://127.0.0.1:8101/mcp",
+            "strategy": "random"
+        },
+        {
+            "id": "P02",
+            "display_name": "BetaBot",
+            "host": "127.0.0.1",
+            "port": 8102,
+            "endpoint": "http://127.0.0.1:8102/mcp",
+            "strategy": "deterministic_even"
+        },
+        {
+            "id": "P03",
+            "display_name": "GammaBot",
+            "host": "127.0.0.1",
+            "port": 8103,
+            "endpoint": "http://127.0.0.1:8103/mcp",
+            "strategy": "alternating"
+        },
+        {
+            "id": "P04",
+            "display_name": "DeltaBot",
+            "host": "127.0.0.1",
+            "port": 8104,
+            "endpoint": "http://127.0.0.1:8104/mcp",
+            "strategy": "adaptive"
+        }
+    ]
+}
