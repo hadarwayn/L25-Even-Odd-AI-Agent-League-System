@@ -1,2 +1,4 @@
 {"timestamp": "2025-12-17T10:56:14.567362+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF02", "event_type": "STARTUP", "message": "Referee REF02 starting"}
 {"timestamp": "2025-12-17T10:56:14.628011+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF02", "event_type": "REGISTERED", "message": "Registered as REF02"}
+{"timestamp": "2025-12-17T13:57:17.019212+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF02", "event_type": "STARTUP", "message": "Referee REF02 starting"}
+{"timestamp": "2025-12-17T13:57:17.104628+00:00", "level": "INFO", "agent_type": "referees", "agent_id": "REF02", "event_type": "REGISTERED", "message": "Registered as REF02"}

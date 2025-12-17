@@ -272,6 +272,47 @@ python run_league.py
 
 ---
 
+## Example Game 2: Deterministic Strategy Wins
+
+A second league run demonstrating how outcomes vary based on random draws:
+
+### Match History
+
+| Match | Round | Player A | Choice | vs | Player B | Choice | Draw# | Winner |
+|-------|-------|----------|--------|----|---------|---------| -----|--------|
+| R1M1 | 1 | P01 | even | vs | P02 | even | 6 | DRAW |
+| R1M2 | 1 | P03 | even | vs | P04 | even | 9 | DRAW |
+| R2M1 | 2 | P01 | odd | vs | P03 | odd | 7 | DRAW |
+| R2M2 | 2 | P02 | even | vs | P04 | odd | 2 | **P02** |
+| R3M1 | 3 | P01 | odd | vs | P04 | odd | 1 | DRAW |
+| R3M2 | 3 | P02 | even | vs | P03 | even | 2 | DRAW |
+
+### Final Standings
+
+| Rank | Player | Strategy | P | W | D | L | Pts |
+|------|--------|----------|---|---|---|---|-----|
+| 1 | P02 (BetaBot) | deterministic_even | 3 | 1 | 2 | 0 | **5** |
+| 2 | P01 (AlphaBot) | random | 3 | 0 | 3 | 0 | 3 |
+| 3 | P03 (GammaBot) | alternating | 3 | 0 | 3 | 0 | 3 |
+| 4 | P04 (DeltaBot) | adaptive | 3 | 0 | 2 | 1 | 2 |
+
+### Champion
+
+**P02 (BetaBot)** - Deterministic Even Strategy
+- Record: 1W-2D-0L (5 points)
+- Performance: 0.27ms total, 0.04ms/match
+- The deterministic even strategy won when the adaptive opponent chose odd on an even draw!
+
+### Analysis
+
+This game shows how the **same strategies produce different outcomes** based on random draws:
+- **Game 1**: Adaptive strategy (P04) won by exploiting patterns
+- **Game 2**: Deterministic Even (P02) won when P04's adaptive choice was wrong
+
+This illustrates the **mixed strategy Nash equilibrium** - no pure strategy dominates across all games.
+
+---
+
 ## Troubleshooting
 
 ### "Module not found" error

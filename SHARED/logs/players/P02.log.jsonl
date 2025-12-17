@@ -1,2 +1,4 @@
 {"timestamp": "2025-12-17T10:56:47.325308+00:00", "level": "INFO", "agent_type": "players", "agent_id": "P02", "event_type": "STARTUP", "message": "Player P02 starting"}
 {"timestamp": "2025-12-17T10:56:47.413651+00:00", "level": "INFO", "agent_type": "players", "agent_id": "P02", "event_type": "REGISTERED", "message": "Registered as P02"}
+{"timestamp": "2025-12-17T13:57:31.032262+00:00", "level": "INFO", "agent_type": "players", "agent_id": "P02", "event_type": "STARTUP", "message": "Player P02 starting"}
+{"timestamp": "2025-12-17T13:57:31.262149+00:00", "level": "INFO", "agent_type": "players", "agent_id": "P02", "event_type": "REGISTERED", "message": "Registered as P02"}

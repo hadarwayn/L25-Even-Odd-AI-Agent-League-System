@@ -1,8 +1,8 @@
 {
   "player_id": "P01",
   "state": "REGISTERED",
-  "assigned_id": "P05",
-  "auth_token": "8a580554841c7f56ca43c4bf286465e9",
+  "assigned_id": "P01",
+  "auth_token": "16a97f2e643b3dc429b32dcccc5e85dd",
   "wins": 0,
   "draws": 0,
   "losses": 0,
