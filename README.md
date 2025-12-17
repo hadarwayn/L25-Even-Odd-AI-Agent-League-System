@@ -49,31 +49,58 @@ A distributed multi-agent system implementing a competitive Even/Odd game league
 
 ## Code Files Summary
 
+### Entry Point & Simulation
 | File | Description | Lines |
 |------|-------------|-------|
-| `run_league.py` | Full simulation entry point | 337 |
-| `SHARED/league_sdk/__init__.py` | SDK package exports | 175 |
-| `SHARED/league_sdk/schemas.py` | 18 message type models | 171 |
-| `SHARED/league_sdk/mcp_server.py` | FastAPI MCP server base | 172 |
-| `SHARED/league_sdk/mcp_client.py` | HTTP client with circuit breaker | 174 |
-| `SHARED/league_sdk/auth.py` | Rate limiting & auth validation | 148 |
+| `run_league.py` | League simulation entry point | 52 |
+| `simulation/__init__.py` | Simulation package exports | 24 |
+| `simulation/player.py` | Simulated player agent | 70 |
+| `simulation/referee.py` | Simulated referee agent | 48 |
+| `simulation/league.py` | League orchestration | 148 |
+| `simulation/output.py` | Output formatting | 65 |
+
+### SDK Core
+| File | Description | Lines |
+|------|-------------|-------|
+| `SHARED/league_sdk/mcp_server.py` | FastAPI MCP server | 148 |
+| `SHARED/league_sdk/mcp_client.py` | HTTP client with circuit breaker | 148 |
+| `SHARED/league_sdk/schemas.py` | 18 message type models | 148 |
+| `SHARED/league_sdk/schemas_base.py` | Base schemas and enums | 95 |
+| `SHARED/league_sdk/auth.py` | Rate limiting & auth | 148 |
 | `SHARED/league_sdk/circuit_breaker.py` | Circuit breaker pattern | 145 |
+| `SHARED/league_sdk/helpers.py` | Utility functions | 109 |
+| `SHARED/league_sdk/logger.py` | JSONL structured logger | 113 |
+| `SHARED/league_sdk/game_rules/even_odd.py` | Game logic | 95 |
+
+### SDK Extensions
+| File | Description | Lines |
+|------|-------------|-------|
 | `SHARED/league_sdk/ring_buffer_logger.py` | Ring buffer logging | 142 |
 | `SHARED/league_sdk/state_persistence.py` | Player state persistence | 140 |
 | `SHARED/league_sdk/benchmarks.py` | Performance benchmarking | 138 |
 | `SHARED/league_sdk/visualization.py` | Results visualization | 130 |
 | `SHARED/league_sdk/error_handlers.py` | Error recovery handlers | 135 |
-| `SHARED/league_sdk/helpers.py` | Utility functions | 109 |
-| `SHARED/league_sdk/logger.py` | JSONL structured logger | 113 |
-| `SHARED/league_sdk/game_rules/even_odd.py` | Game logic | 95 |
+
+### Agents
+| File | Description | Lines |
+|------|-------------|-------|
 | `agents/league_manager/main.py` | League Manager agent | 87 |
 | `agents/league_manager/handlers.py` | LM message handlers | 145 |
 | `agents/referee_template/main.py` | Referee agent template | 75 |
 | `agents/referee_template/handlers.py` | Referee handlers | 130 |
 | `agents/player_template/main.py` | Player agent template | 70 |
 | `agents/player_template/handlers.py` | Player handlers | 125 |
-| `tests/test_protocol.py` | Protocol unit tests | 248 |
-| `tests/test_handlers.py` | Handler unit tests | 174 |
+
+### Tests (Split by Category)
+| File | Description | Lines |
+|------|-------------|-------|
+| `tests/test_timestamp.py` | UTC timestamp validation | 35 |
+| `tests/test_enums.py` | Enum validation tests | 62 |
+| `tests/test_helpers.py` | Helper function tests | 35 |
+| `tests/test_messages.py` | Message model tests | 95 |
+| `tests/test_game_logic.py` | Game logic tests | 85 |
+| `tests/test_points.py` | Points calculation tests | 30 |
+| `tests/test_sender.py` | Sender parsing tests | 55 |
 
 ---
 
