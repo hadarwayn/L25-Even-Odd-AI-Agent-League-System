@@ -25,7 +25,7 @@
                     "id": "1.3",
                     "name": "Create SHARED Directory Structure",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["1.2"],
                     "description": "Create SHARED/ with config/, data/, logs/, and league_sdk/ subdirectories.",
                     "files_to_create": [
@@ -49,7 +49,7 @@
                     "id": "2.1",
                     "name": "Config Loader & Models",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["1.3"],
                     "description": "Implement lazy-load JSON configuration with caching and type-safe dataclass models.",
                     "files_to_create": [
@@ -62,7 +62,7 @@
                     "id": "2.2",
                     "name": "Protocol Schemas",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.1"],
                     "description": "Complete Pydantic models for all 18 message types with UTC validation.",
                     "files_to_create": [
@@ -73,7 +73,7 @@
                     "id": "2.3",
                     "name": "MCP Client & Server Base",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.2"],
                     "description": "HTTP client with retry logic and base MCP server class for agents.",
                     "files_to_create": [
@@ -85,7 +85,7 @@
                     "id": "2.4",
                     "name": "Data Repositories",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.1"],
                     "description": "Repository pattern for standings, matches, state, and player data access.",
                     "files_to_create": [
@@ -96,7 +96,7 @@
                     "id": "2.5",
                     "name": "Logger & Helpers",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.1"],
                     "description": "JSONL structured logging and helper utilities (UTC timestamps, ID generation).",
                     "files_to_create": [
@@ -108,7 +108,7 @@
                     "id": "2.6",
                     "name": "Game Rules Engine",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.1"],
                     "description": "Even/Odd game logic for winner determination.",
                     "files_to_create": [
@@ -125,7 +125,7 @@
                     "id": "3.1",
                     "name": "League Manager Main",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.3"],
                     "description": "Entry point for League Manager on port 8000.",
                     "files_to_create": [
@@ -136,7 +136,7 @@
                     "id": "3.2",
                     "name": "Registration Handlers",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["3.1"],
                     "description": "Handle LEAGUE_REGISTER_REQUEST and REFEREE_REGISTER_REQUEST, assign IDs and tokens.",
                     "files_to_create": [
@@ -147,7 +147,7 @@
                     "id": "3.3",
                     "name": "Round-Robin Scheduler",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["3.2"],
                     "description": "Generate round-robin schedule, assign referees, broadcast ROUND_ANNOUNCEMENT.",
                     "files_to_create": [
@@ -158,7 +158,7 @@
                     "id": "3.4",
                     "name": "Standings Calculator",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["3.2"],
                     "description": "Calculate standings (Win=3, Draw=1, Loss=0), broadcast LEAGUE_STANDINGS_UPDATE.",
                     "files_to_create": [
@@ -169,7 +169,7 @@
                     "id": "3.5",
                     "name": "Query Handler",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["3.4"],
                     "description": "Handle LEAGUE_QUERY requests (standings, schedule, stats, next_match)."
                 }
@@ -182,7 +182,7 @@
                     "id": "4.1",
                     "name": "Referee Template Main",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.3"],
                     "description": "Entry point for Referee agent with configurable port.",
                     "files_to_create": [
@@ -193,7 +193,7 @@
                     "id": "4.2",
                     "name": "Referee Registration",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["4.1"],
                     "description": "Register with League Manager, receive referee_id and auth_token.",
                     "files_to_create": [
@@ -204,7 +204,7 @@
                     "id": "4.3",
                     "name": "Match Orchestration",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["4.2"],
                     "description": "Send GAME_INVITATION, collect GAME_JOIN_ACK (5s), CHOOSE_PARITY (30s).",
                     "files_to_create": [
@@ -215,7 +215,7 @@
                     "id": "4.4",
                     "name": "Winner Determination",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["4.3", "2.6"],
                     "description": "Draw random number, determine winner, send GAME_OVER, report to Manager."
                 },
@@ -223,7 +223,7 @@
                     "id": "4.5",
                     "name": "Create Referee Instances",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["4.4"],
                     "description": "Create referee_REF01 (port 8001) and referee_REF02 (port 8002) from template.",
                     "files_to_create": [
@@ -273,7 +273,7 @@
                     "id": "5.4",
                     "name": "Strategy Engine",
                     "priority": "high",
-                    "status": "in_progress",
+                    "status": "completed",
                     "dependencies": ["5.3"],
                     "description": "Implement pluggable strategies: Random, Deterministic, Alternating, Adaptive, LLM-Based.",
                     "files_to_create": [
@@ -289,7 +289,7 @@
                     "id": "5.5",
                     "name": "Create Player Instances",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["5.4"],
                     "description": "Create player_P01-P04 instances with different strategies on ports 8101-8104.",
                     "files_to_create": [
@@ -323,7 +323,7 @@
                     "id": "6.2",
                     "name": "Unit Tests for SDK",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["2.6"],
                     "description": "Test schemas, config loader, helpers, game rules.",
                     "files_to_create": [
@@ -334,7 +334,7 @@
                     "id": "6.3",
                     "name": "Unit Tests for League Manager",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["3.5"],
                     "description": "Test registration, scheduling, standings calculation.",
                     "files_to_create": [
@@ -345,7 +345,7 @@
                     "id": "6.4",
                     "name": "Unit Tests for Referee",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["4.4"],
                     "description": "Test match orchestration, timeout handling, winner determination.",
                     "files_to_create": [
@@ -367,7 +367,7 @@
                     "id": "6.6",
                     "name": "Integration Test: Full League",
                     "priority": "critical",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["6.2", "6.3", "6.4", "6.5"],
                     "description": "Run full league with all agents, verify completion without errors."
                 }
@@ -388,7 +388,7 @@
                     "id": "7.2",
                     "name": "Update tasks.json",
                     "priority": "critical",
-                    "status": "in_progress",
+                    "status": "completed",
                     "dependencies": ["7.1"],
                     "description": "Update tasks with full multi-agent implementation tasks."
                 },
@@ -396,7 +396,7 @@
                     "id": "7.3",
                     "name": "Update README.md",
                     "priority": "high",
-                    "status": "pending",
+                    "status": "completed",
                     "dependencies": ["6.6"],
                     "description": "Full system documentation with deployment instructions for all 7 agents."
                 }

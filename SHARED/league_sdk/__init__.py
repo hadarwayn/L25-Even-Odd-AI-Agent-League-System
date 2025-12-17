@@ -40,6 +40,7 @@ from .schemas import (
     LeagueCompleted,
     LeagueError,
     GameError,
+    AgentHeartbeat,
 )
 from .schemas_base import ParityChoice, GameResult, MatchRole, ErrorCode
 
@@ -128,6 +129,7 @@ __all__ = [
     "LeagueCompleted",
     "LeagueError",
     "GameError",
+    "AgentHeartbeat",
     # Enums
     "ParityChoice",
     "GameResult",

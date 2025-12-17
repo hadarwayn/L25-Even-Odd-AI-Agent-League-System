@@ -1,0 +1,15 @@
+{
+    "manager_id": "MANAGER",
+    "host": "127.0.0.1",
+    "port": 8000,
+    "auto_start": {
+        "min_players_to_start": 4,
+        "wait_after_min_players_seconds": 10
+    },
+    "min_referees": 1,
+    "max_players": 16,
+    "logging": {
+        "level": "INFO",
+        "ring_buffer_size": 1000
+    }
+}

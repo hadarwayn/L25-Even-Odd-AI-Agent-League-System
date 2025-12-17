@@ -168,3 +168,13 @@ class GameError(MessageEnvelope):
     error_code: ErrorCode
     error_message: str
     retryable: bool = False
+
+
+# Health Messages
+class AgentHeartbeat(MessageEnvelope):
+    """Agent heartbeat for health monitoring."""
+    message_type: Literal["AGENT_HEARTBEAT"] = "AGENT_HEARTBEAT"
+    agent_type: Literal["player", "referee", "manager"]
+    status: Literal["HEALTHY", "DEGRADED", "SHUTDOWN"]
+    uptime_seconds: int
+    matches_handled: Optional[int] = None

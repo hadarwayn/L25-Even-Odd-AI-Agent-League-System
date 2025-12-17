@@ -66,7 +66,7 @@ class TestRegistrationMessages:
     def test_league_register_response_accepted(self):
         """Parse accepted registration response."""
         response = LeagueRegisterResponse(
-            sender="league_manager",
+            sender="manager:MANAGER",
             timestamp=utc_now(),
             conversation_id=generate_uuid(),
             status="REGISTERED",
@@ -80,7 +80,7 @@ class TestRegistrationMessages:
     def test_league_register_response_rejected(self):
         """Parse rejected registration response."""
         response = LeagueRegisterResponse(
-            sender="league_manager",
+            sender="manager:MANAGER",
             timestamp=utc_now(),
             conversation_id=generate_uuid(),
             status="REJECTED",
